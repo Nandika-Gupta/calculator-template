@@ -18,7 +18,7 @@ class TestBasicOperations:
         assert subtract(5, 3) == 2
         assert subtract(10, 4) == 6
     def test_multiply_positive_numbers(self):
-        """Test multiplying positive numbers"""
+        """Test multiplying positive numbers """
         assert multiply(2, 3) == 6
         assert multiply(5, 4) == 20
 
