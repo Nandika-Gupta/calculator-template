@@ -44,13 +44,3 @@ htmlcov/
 
 # Logs
 *.log
-# ViralCut runtime data
-viralcut_data/
-viralcut/settings.env
-.venv/
-
-# Windows app build outputs
-build_assets/
-build/
-dist/
-dist_installer/
