@@ -20,7 +20,7 @@ CAPTION_STYLES = {
     "neon": ("FFF4E0", "FF4FD8", 5, False, 0.055),     # soft white + magenta
     "minimal": ("FFFFFF", "FFFFFF", 4, False, 0.045),  # clean, no highlight colour
 }
-FONT = os.environ.get("CLIPFORGE_FONT", "Arial Black")
+FONT = os.environ.get("VIRALCUT_FONT", "Arial Black")
 
 
 @dataclass

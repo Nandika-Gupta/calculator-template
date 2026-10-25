@@ -1,6 +1,6 @@
-"""ClipForge web server.
+"""ViralCut web server.
 
-Run:  uvicorn clipforge.app:app --host 0.0.0.0 --port 8000
+Run:  uvicorn viralcut.app:app --host 0.0.0.0 --port 8000
 """
 
 from __future__ import annotations
@@ -25,14 +25,14 @@ from .pipeline import JobSettings, JobStore
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
-DATA_DIR = Path(os.environ.get("CLIPFORGE_DATA", Path.cwd() / "clipforge_data"))
+DATA_DIR = Path(os.environ.get("VIRALCUT_DATA", Path.cwd() / "viralcut_data"))
 WEB_DIR = Path(__file__).parent / "web"
 VIDEO_EXT = {".mp4", ".mov", ".mkv", ".webm", ".avi", ".m4v", ".flv", ".wmv", ".mpeg", ".mpg", ".ts"}
 SERVABLE = re.compile(r"^(clip_\d{2}\.(mp4|jpg|ass)|transcript\.(txt|json))$")
 PLATFORMS = ("tiktok", "instagram", "youtube", "x", "linkedin")
 
-app = FastAPI(title="ClipForge", version=__version__)
-store = JobStore(DATA_DIR / "jobs", workers=int(os.environ.get("CLIPFORGE_WORKERS", "1")))
+app = FastAPI(title="ViralCut", version=__version__)
+store = JobStore(DATA_DIR / "jobs", workers=int(os.environ.get("VIRALCUT_WORKERS", "1")))
 app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 
 
@@ -149,7 +149,7 @@ def export_zip(job_id: str) -> StreamingResponse:
             zf.writestr("full_video_post.txt", job.long_form_post)
     buf.seek(0)
     return StreamingResponse(buf, media_type="application/zip",
-                             headers={"Content-Disposition": f'attachment; filename="clipforge_{job_id}.zip"'})
+                             headers={"Content-Disposition": f'attachment; filename="viralcut_{job_id}.zip"'})
 
 
 class ScheduleItem(BaseModel):
@@ -194,13 +194,13 @@ def _ics_escape(text: str) -> str:
 def schedule_ics(job_id: str) -> Response:
     job = _job_or_404(job_id)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//ClipForge//Posting Schedule//EN"]
+    lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//ViralCut//Posting Schedule//EN"]
     for i, item in enumerate(job.schedule):
         start = datetime.fromisoformat(item["time"])
         clip = next((c for c in job.clips if c["id"] == item["clip_id"]), {"title": item["clip_id"]})
         lines += [
             "BEGIN:VEVENT",
-            f"UID:{job_id}-{i}@clipforge",
+            f"UID:{job_id}-{i}@viralcut",
             f"DTSTAMP:{stamp}",
             f"DTSTART:{start.strftime('%Y%m%dT%H%M%S')}",
             f"DTEND:{(start + timedelta(minutes=15)).strftime('%Y%m%dT%H%M%S')}",

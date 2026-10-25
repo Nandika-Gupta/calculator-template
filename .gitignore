@@ -44,5 +44,5 @@ htmlcov/
 
 # Logs
 *.log
-# ClipForge runtime data
-clipforge_data/
+# ViralCut runtime data
+viralcut_data/

@@ -15,7 +15,7 @@ from .transcript import Sentence, transcript_text
 
 log = logging.getLogger(__name__)
 
-MODEL = os.environ.get("CLIPFORGE_MODEL", "claude-opus-5-5")
+MODEL = os.environ.get("VIRALCUT_MODEL", "claude-opus-5-5")
 
 
 class PlatformPosts(BaseModel):

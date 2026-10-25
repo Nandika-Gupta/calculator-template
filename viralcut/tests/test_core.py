@@ -2,10 +2,10 @@
 
 import numpy as np
 
-from clipforge import ai, analysis
-from clipforge.pipeline import JobSettings
-from clipforge.render import RenderOptions, build_ass, chunk_words
-from clipforge.transcript import Word, parse_subtitles, words_to_sentences
+from viralcut import ai, analysis
+from viralcut.pipeline import JobSettings
+from viralcut.render import RenderOptions, build_ass, chunk_words
+from viralcut.transcript import Word, parse_subtitles, words_to_sentences
 
 SRT = """1
 00:00:01,000 --> 00:00:04,000
@@ -136,7 +136,7 @@ def test_caption_events_never_overlap():
 
 
 def test_claude_plans_are_snapped_and_normalised():
-    from clipforge.pipeline import _plans_from_ai  # pylint: disable=import-outside-toplevel
+    from viralcut.pipeline import _plans_from_ai  # pylint: disable=import-outside-toplevel
 
     sentences = parse_subtitles(SRT)
     posts = ai.PlatformPosts(tiktok="t", instagram="i", youtube="y", x="x", linkedin="l")

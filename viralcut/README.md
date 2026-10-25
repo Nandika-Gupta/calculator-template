@@ -1,6 +1,6 @@
-# ⚡ ClipForge: long video → viral shorts
+# ⚡ ViralCut: long video → viral shorts
 
-ClipForge is a self-hosted AI clipping studio, like OpusClip or ScaleReach. You paste a link or upload a long video
+ViralCut is a self-hosted AI clipping studio, like OpusClip or ScaleReach. You paste a link or upload a long video
 (podcast, stream, interview, talk), and it gives you ready-to-post 9:16 shorts plus posts and hashtags for every platform.
 
 ## What it does
@@ -20,23 +20,23 @@ ClipForge is a self-hosted AI clipping studio, like OpusClip or ScaleReach. You 
 ```bash
 # 1. Install FFmpeg (https://ffmpeg.org) - e.g. `brew install ffmpeg` / `sudo apt install ffmpeg` / `winget install ffmpeg`
 # 2. Install Python deps (Python 3.10+)
-pip install -r clipforge/requirements.txt
+pip install -r viralcut/requirements.txt
 # 3. Optional: enable Claude for the best clip picks + copy
 export ANTHROPIC_API_KEY=sk-ant-...
 # 4. Run (from the repository root)
-uvicorn clipforge.app:app --host 0.0.0.0 --port 8000
+uvicorn viralcut.app:app --host 0.0.0.0 --port 8000
 ```
 
 Open <http://localhost:8000>, paste a link or drop a video, and click **Generate viral clips**.
 
 The first run downloads the Whisper model (`small`, ~500 MB). On a GPU machine it's much faster. Set
-`device`/`compute_type` in `clipforge/transcript.py` if you want to force CUDA.
+`device`/`compute_type` in `viralcut/transcript.py` if you want to force CUDA.
 
 ### Docker
 
 ```bash
-docker build -t clipforge -f clipforge/Dockerfile .
-docker run -p 8000:8000 -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY -v $PWD/clipforge_data:/app/clipforge_data clipforge
+docker build -t viralcut -f viralcut/Dockerfile .
+docker run -p 8000:8000 -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY -v $PWD/viralcut_data:/app/viralcut_data viralcut
 ```
 
 ## Configuration (environment variables)
@@ -44,10 +44,10 @@ docker run -p 8000:8000 -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY -v $PWD/clipforg
 | Variable | Default | Purpose |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | – | Enables Claude clip selection and copywriting |
-| `CLIPFORGE_MODEL` | `claude-opus-5-5` | Claude model to use |
-| `CLIPFORGE_DATA` | `./clipforge_data` | Where projects, clips and transcripts are stored |
-| `CLIPFORGE_WORKERS` | `1` | Videos processed in parallel |
-| `CLIPFORGE_FONT` | `Arial Black` | Caption font (any installed font; e.g. `Montserrat Black`) |
+| `VIRALCUT_MODEL` | `claude-opus-5-5` | Claude model to use |
+| `VIRALCUT_DATA` | `./viralcut_data` | Where projects, clips and transcripts are stored |
+| `VIRALCUT_WORKERS` | `1` | Videos processed in parallel |
+| `VIRALCUT_FONT` | `Arial Black` | Caption font (any installed font; e.g. `Montserrat Black`) |
 
 ## API
 
@@ -64,11 +64,11 @@ docker run -p 8000:8000 -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY -v $PWD/clipforg
 
 ```bash
 pip install pytest
-python -m pytest clipforge/tests
+python -m pytest viralcut/tests
 ```
 
 ## Notes
 
 * Auto-posting directly to TikTok/Instagram/YouTube needs each platform's developer app approval and OAuth.
-  ClipForge prepares the clips, captions, hashtags and the schedule, and puts posting reminders in your calendar.
+  ViralCut prepares the clips, captions, hashtags and the schedule, and puts posting reminders in your calendar.
 * Only process videos you own or have permission to repurpose.
