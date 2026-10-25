@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess  # nosec B404 - argument lists only, no shell
 import tempfile
 from dataclasses import dataclass
@@ -181,6 +182,18 @@ class FaceTracker:
         return max(0, min(self.frame_w - self.crop_w, x))
 
 
+def _bundled_font(work: Path) -> str:
+    """Use VIRALCUT_FONT_FILE (shipped with the desktop app) so captions never depend on system fonts."""
+    font = os.environ.get("VIRALCUT_FONT_FILE", "")
+    if not font or not os.path.isfile(font):
+        return ""
+    target = work / "fonts" / os.path.basename(font)
+    if not target.exists():
+        target.parent.mkdir(exist_ok=True)
+        shutil.copyfile(font, target)
+    return ":fontsdir=fonts"
+
+
 def _resolve_layout(info: VideoInfo, opts: RenderOptions) -> str:
     if opts.layout != "auto":
         return opts.layout
@@ -195,8 +208,9 @@ def render_clip(src: Path, info: VideoInfo, start: float, end: float, out_path: 
     """Render one short and return the layout used."""
     out_path = Path(out_path).resolve()
     work = out_path.parent
-    ass_name = out_path.stem + ".ass"
-    (work / ass_name).write_text(build_ass(sentences, start, end, opts, hook), encoding="utf-8")
+    ass_file = out_path.stem + ".ass"
+    (work / ass_file).write_text(build_ass(sentences, start, end, opts, hook), encoding="utf-8")
+    ass_name = ass_file + _bundled_font(work)
     layout = _resolve_layout(info, opts)
     fps = min(info.fps or 30.0, opts.max_fps)
     dur = end - start

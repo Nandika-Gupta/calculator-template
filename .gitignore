@@ -48,3 +48,9 @@ htmlcov/
 viralcut_data/
 viralcut/settings.env
 .venv/
+
+# Windows app build outputs
+build_assets/
+build/
+dist/
+dist_installer/

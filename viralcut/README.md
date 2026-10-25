@@ -15,6 +15,17 @@ ViralCut is a self-hosted AI clipping studio, like OpusClip or ScaleReach. You p
 | **Animated captions** | Burned-in word-by-word captions with the active word highlighted (Bold pop, Karaoke, Neon, Minimal), plus a hook title for the first 3 seconds. |
 | **Publish** | Download each clip or the whole set as a ZIP (each clip comes with a text file of its posts), copy the posts, and plan a **posting schedule** with suggested peak times. The schedule exports to your calendar as `.ics`. |
 
+## Windows app (.exe)
+
+Download **`ViralCut-Setup-x.y.z.exe`** from this repository's **Releases** page, run it, and follow the installer.
+It installs for your user only (no admin needed) and adds ViralCut to the Start menu and desktop.
+FFmpeg, the speech engine and the caption font are included, so you don't need to install anything else.
+To use Claude, open the app, click **⚙️ Settings** and paste your Claude API key.
+
+The installer is built and self-tested on a real Windows machine by
+[`.github/workflows/viralcut-windows.yml`](../.github/workflows/viralcut-windows.yml) on every change to `viralcut/`
+(PyInstaller → `ViralCut.exe --selftest` → Inno Setup).
+
 ## Use it on your own computer (recommended for personal use)
 
 It's free, private (your videos never leave your machine) and only you can open it.

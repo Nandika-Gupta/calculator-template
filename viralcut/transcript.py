@@ -6,6 +6,7 @@ so captions can highlight the word being spoken.
 
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import dataclass, field, asdict
 
@@ -119,7 +120,8 @@ def transcribe(audio_path: str, model_size: str = "small", language: str | None 
     except ImportError as exc:
         raise RuntimeError("faster-whisper is not installed (pip install faster-whisper)") from exc
     try:
-        model = WhisperModel(model_size, device="auto", compute_type="int8")
+        device = os.environ.get("VIRALCUT_WHISPER_DEVICE", "cpu")  # "cuda" for NVIDIA GPUs with CUDA installed
+        model = WhisperModel(model_size, device=device, compute_type="int8")
         segments, _info = model.transcribe(audio_path, word_timestamps=True, vad_filter=True, language=language)
         words = [
             Word(w.word.strip(), float(w.start), float(w.end))

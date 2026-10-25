@@ -22,12 +22,12 @@ from fastapi.responses import FileResponse, HTMLResponse, Response, StreamingRes
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import __version__, ai
+from . import __version__, ai, config
 from .pipeline import JobSettings, JobStore
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
-DATA_DIR = Path(os.environ.get("VIRALCUT_DATA", Path.cwd() / "viralcut_data"))
+DATA_DIR = config.data_dir()
 WEB_DIR = Path(__file__).parent / "web"
 VIDEO_EXT = {".mp4", ".mov", ".mkv", ".webm", ".avi", ".m4v", ".flv", ".wmv", ".mpeg", ".mpg", ".ts"}
 SERVABLE = re.compile(r"^(clip_\d{2}\.(mp4|jpg|ass)|transcript\.(txt|json))$")
@@ -73,7 +73,7 @@ def index() -> HTMLResponse:
 
 
 @app.get("/api/config")
-def config() -> dict:
+def app_config() -> dict:
     try:
         import faster_whisper  # noqa: F401 pylint: disable=import-outside-toplevel,unused-import
 
@@ -174,6 +174,43 @@ def export_zip(job_id: str) -> StreamingResponse:
     buf.seek(0)
     return StreamingResponse(buf, media_type="application/zip",
                              headers={"Content-Disposition": f'attachment; filename="viralcut_{job_id}.zip"'})
+
+
+class SettingsUpdate(BaseModel):
+    anthropic_api_key: str | None = None
+    whisper_model: str | None = None
+
+
+def _local_only(request: Request) -> None:
+    # Settings hold the API key: only the person sitting at this computer may read or change them.
+    host = request.client.host if request.client else ""
+    if host not in ("127.0.0.1", "::1", "localhost", "testclient"):
+        raise HTTPException(403, "settings can only be changed on the computer running ViralCut")
+
+
+@app.get("/api/settings")
+def get_settings(request: Request) -> dict:
+    _local_only(request)
+    key = os.environ.get("ANTHROPIC_API_KEY", "")
+    return {"has_key": bool(key), "key_hint": f"{key[:7]}…{key[-4:]}" if len(key) > 12 else "",
+            "whisper_model": os.environ.get("VIRALCUT_WHISPER_MODEL", "small")}
+
+
+@app.post("/api/settings")
+def update_settings(request: Request, body: SettingsUpdate) -> dict:
+    _local_only(request)
+    updates = {}
+    if body.anthropic_api_key is not None:
+        key = body.anthropic_api_key.strip()
+        if key and not key.startswith("sk-ant-"):
+            raise HTTPException(400, "Claude API keys start with sk-ant-")
+        updates["ANTHROPIC_API_KEY"] = key
+    if body.whisper_model is not None:
+        if body.whisper_model not in ("tiny", "base", "small", "medium", "large-v3"):
+            raise HTTPException(400, "unknown speech model")
+        updates["VIRALCUT_WHISPER_MODEL"] = body.whisper_model
+    config.save_settings(updates)
+    return get_settings(request)
 
 
 class ScheduleItem(BaseModel):

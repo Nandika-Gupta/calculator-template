@@ -11,7 +11,10 @@
 <body>
   <header class="topbar">
     <a class="brand" href="/"><span class="logo">⚡</span> ViralCut</a>
-    <div class="chips" id="statusChips"></div>
+    <div class="top-right">
+      <div class="chips" id="statusChips"></div>
+      <button class="btn small" id="settingsBtn" type="button">⚙️ Settings</button>
+    </div>
   </header>
 
   <main>
@@ -167,6 +170,32 @@
       <div class="row-end">
         <button class="btn ghost" value="cancel" formnovalidate>Cancel</button>
         <button class="btn primary" id="schedSave" value="save">Add to schedule</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- settings modal -->
+  <dialog id="settingsDialog" class="modal">
+    <form method="dialog" id="settingsForm">
+      <h3>Settings</h3>
+      <p class="muted">Saved on this computer only.</p>
+      <label for="apiKey">Claude API key <small class="muted" id="keyHint"></small></label>
+      <input type="password" id="apiKey" class="input" placeholder="sk-ant-…" autocomplete="off" />
+      <p class="hint">Gives the best clip picks, posts and hashtags. Get one at console.anthropic.com → API Keys.
+        Leave empty to use the free offline mode.</p>
+      <label for="whisperModel">Speech recognition quality</label>
+      <select id="whisperModel" class="input">
+        <option value="tiny">Fastest (tiny)</option>
+        <option value="base">Fast (base)</option>
+        <option value="small">Balanced (small): recommended</option>
+        <option value="medium">Accurate (medium): slower, 5 GB RAM</option>
+        <option value="large-v3">Most accurate (large-v3): slow, 10 GB RAM</option>
+      </select>
+      <p id="settingsError" class="error hidden"></p>
+      <div class="row-end">
+        <button class="btn ghost" value="cancel" formnovalidate>Cancel</button>
+        <button class="btn ghost" id="removeKey" type="button">Remove key</button>
+        <button class="btn primary" value="save">Save</button>
       </div>
     </form>
   </dialog>

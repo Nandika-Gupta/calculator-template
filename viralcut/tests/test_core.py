@@ -165,3 +165,21 @@ def test_password_protection(monkeypatch, tmp_path):
     bad = base64.b64encode(b"me:nope").decode()
     assert client.get("/api/config", headers={"Authorization": f"Basic {good}"}).status_code == 200
     assert client.get("/api/config", headers={"Authorization": f"Basic {bad}"}).status_code == 401
+
+
+def test_settings_api_saves_key(monkeypatch, tmp_path):
+    monkeypatch.setenv("VIRALCUT_DATA", str(tmp_path))
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    from fastapi.testclient import TestClient  # pylint: disable=import-outside-toplevel
+
+    from viralcut import app as app_module, config  # pylint: disable=import-outside-toplevel
+
+    monkeypatch.setattr(app_module, "PASSWORD", "")
+    client = TestClient(app_module.app)
+    assert client.get("/api/settings").json()["has_key"] is False
+    assert client.post("/api/settings", json={"anthropic_api_key": "nope"}).status_code == 400
+    res = client.post("/api/settings", json={"anthropic_api_key": "sk-ant-test-1234567890", "whisper_model": "base"})
+    assert res.json()["has_key"] is True and res.json()["whisper_model"] == "base"
+    assert "sk-ant-test-1234567890" in config.settings_path().read_text()
+    assert client.post("/api/settings", json={"anthropic_api_key": ""}).json()["has_key"] is False
+    monkeypatch.delenv("VIRALCUT_WHISPER_MODEL", raising=False)

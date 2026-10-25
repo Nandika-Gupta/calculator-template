@@ -62,8 +62,33 @@ async function loadConfig() {
       el("span", { class: `chip ${cfg.whisper ? "ok" : "off"}` }, cfg.whisper ? "🎙️ Whisper ready" : "🎙️ No Whisper"),
       el("span", { class: `chip ${cfg.ffmpeg ? "ok" : "off"}` }, cfg.ffmpeg ? "🎞️ FFmpeg" : "⚠️ FFmpeg missing"),
     );
-    if (!cfg.ai) $("#useAi").parentElement.title = "Set ANTHROPIC_API_KEY on the server to enable Claude";
+    if (!cfg.ai) $("#useAi").parentElement.title = "Add your Claude API key in Settings to enable Claude";
   } catch { /* server status is decorative */ }
+}
+
+async function openSettings() {
+  $("#settingsError").classList.add("hidden");
+  try {
+    const s = await api("/api/settings");
+    $("#apiKey").value = "";
+    $("#apiKey").placeholder = s.has_key ? "Key saved. Paste a new one to replace it" : "sk-ant-…";
+    $("#keyHint").textContent = s.has_key ? `· saved (${s.key_hint})` : "· not set";
+    $("#whisperModel").value = s.whisper_model;
+    $("#removeKey").classList.toggle("hidden", !s.has_key);
+    $("#settingsDialog").showModal();
+  } catch (ex) { toast(ex.message); }
+}
+
+async function saveSettings(body) {
+  try {
+    await api("/api/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    $("#settingsDialog").close();
+    toast("Settings saved");
+    loadConfig();
+  } catch (ex) {
+    $("#settingsError").textContent = ex.message;
+    $("#settingsError").classList.remove("hidden");
+  }
 }
 
 function bindForm() {
@@ -323,6 +348,15 @@ function route() {
 $("#backBtn").addEventListener("click", () => { location.hash = ""; });
 $("#copyLong").addEventListener("click", () => copy($("#longPost").textContent));
 $("#schedForm").addEventListener("submit", saveSchedule);
+$("#settingsBtn").addEventListener("click", openSettings);
+$("#removeKey").addEventListener("click", () => saveSettings({ anthropic_api_key: "" }));
+$("#settingsForm").addEventListener("submit", (e) => {
+  if (e.submitter && e.submitter.value !== "save") return;
+  e.preventDefault();
+  const body = { whisper_model: $("#whisperModel").value };
+  if ($("#apiKey").value.trim()) body.anthropic_api_key = $("#apiKey").value.trim();
+  saveSettings(body);
+});
 window.addEventListener("hashchange", route);
 bindForm();
 loadConfig();
