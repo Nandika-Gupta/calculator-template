@@ -15,7 +15,24 @@ ViralCut is a self-hosted AI clipping studio, like OpusClip or ScaleReach. You p
 | **Animated captions** | Burned-in word-by-word captions with the active word highlighted (Bold pop, Karaoke, Neon, Minimal), plus a hook title for the first 3 seconds. |
 | **Publish** | Download each clip or the whole set as a ZIP (each clip comes with a text file of its posts), copy the posts, and plan a **posting schedule** with suggested peak times. The schedule exports to your calendar as `.ics`. |
 
-## Quick start
+## Use it on your own computer (recommended for personal use)
+
+It's free, private (your videos never leave your machine) and only you can open it.
+
+1. Install **FFmpeg**. On Windows, open PowerShell and run `winget install ffmpeg`. On macOS, run `brew install ffmpeg`.
+2. Install **Python 3.10+** from <https://www.python.org/downloads/>. On Windows, tick *"Add Python to PATH"*.
+3. Download this project (GitHub → **Code → Download ZIP**) and unzip it.
+4. Start it:
+   * **Windows:** double-click `viralcut\start.bat`
+   * **macOS / Linux:** run `bash viralcut/start.sh`
+
+   The first start installs everything, which takes a few minutes. After that it opens <http://127.0.0.1:8000> in your browser.
+5. *(Optional)* For the best clips and posts, open `viralcut/settings.env` in Notepad or TextEdit, paste your Claude API key
+   after `ANTHROPIC_API_KEY=`, save, and restart. Without a key, ViralCut uses its free offline mode.
+
+Keep the black terminal window open while you use ViralCut. Close it to stop the app.
+
+## Quick start (manual)
 
 ```bash
 # 1. Install FFmpeg (https://ffmpeg.org) - e.g. `brew install ffmpeg` / `sudo apt install ffmpeg` / `winget install ffmpeg`
