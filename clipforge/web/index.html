@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClipForge · Viral Shorts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="logo">⚡</span> ClipForge</a>
+    <div class="chips" id="statusChips"></div>
+  </header>
+
+  <main>
+    <!-- CREATE -->
+    <section id="createView" class="view">
+      <div class="hero">
+        <span class="pill">AI clipping studio</span>
+        <h1>Turn one long video into <span class="grad">viral shorts</span>, automatically.</h1>
+        <p class="sub">Paste a YouTube, Twitch, Kick, Drive or Dropbox link, or upload a file. ClipForge finds the most
+          engaging moments, reframes them to 9:16 around the speaker's face, burns in animated captions, and writes
+          posts and hashtags for TikTok, Reels, Shorts, X and LinkedIn.</p>
+      </div>
+
+      <form id="jobForm" class="card create-card">
+        <div class="tabs" role="tablist">
+          <button type="button" class="tab active" data-tab="link">🔗 Paste link</button>
+          <button type="button" class="tab" data-tab="upload">⬆️ Upload video</button>
+        </div>
+
+        <div class="tab-panel" data-panel="link">
+          <input id="urlInput" class="input big" type="url" placeholder="https://www.youtube.com/watch?v=…" />
+          <p class="hint">Works with YouTube, Twitch, Kick, Vimeo, X, Google Drive, Dropbox and direct video links.</p>
+        </div>
+        <div class="tab-panel hidden" data-panel="upload">
+          <label id="dropZone" class="drop">
+            <input id="fileInput" type="file" accept="video/*" hidden />
+            <div class="drop-icon">🎬</div>
+            <div id="dropText"><strong>Drop a video here</strong> or click to browse<br /><small>MP4, MOV, MKV, WEBM, any length</small></div>
+          </label>
+        </div>
+
+        <details class="settings" open>
+          <summary>Clip settings</summary>
+          <div class="grid">
+            <div class="field">
+              <label>Number of clips <b id="countVal">5</b></label>
+              <input id="clipCount" type="range" min="1" max="12" value="5" />
+            </div>
+            <div class="field">
+              <label>Clip length</label>
+              <div class="seg" id="lengthSeg">
+                <button type="button" data-min="15" data-max="30">15–30s</button>
+                <button type="button" data-min="20" data-max="60" class="on">20–60s</button>
+                <button type="button" data-min="45" data-max="90">45–90s</button>
+                <button type="button" data-min="60" data-max="180">1–3 min</button>
+              </div>
+            </div>
+            <div class="field">
+              <label>Framing</label>
+              <select id="layout" class="input">
+                <option value="auto">Auto (face tracking for landscape)</option>
+                <option value="track">AI face tracking crop</option>
+                <option value="fit">Full frame + blurred background</option>
+                <option value="center">Center crop</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Quality</label>
+              <div class="seg" id="resSeg">
+                <button type="button" data-res="720" class="on">720p · fast</button>
+                <button type="button" data-res="1080">1080p · HD</button>
+              </div>
+            </div>
+            <div class="field wide">
+              <label>Caption style</label>
+              <div class="styles" id="styleSeg">
+                <button type="button" data-style="bold" class="on"><span class="cap bold">THE <i>SECRET</i></span>Bold pop</button>
+                <button type="button" data-style="karaoke"><span class="cap karaoke">THE <i>SECRET</i></span>Karaoke</button>
+                <button type="button" data-style="neon"><span class="cap neon">the <i>secret</i></span>Neon</button>
+                <button type="button" data-style="minimal"><span class="cap minimal">the secret</span>Minimal</button>
+                <button type="button" data-style="none"><span class="cap none">—</span>No captions</button>
+              </div>
+            </div>
+            <div class="field">
+              <label class="toggle"><input id="showHook" type="checkbox" checked /> <span>Hook title in the first 3s</span></label>
+              <label class="toggle"><input id="useAi" type="checkbox" checked /> <span>Use Claude for clip picking &amp; copy</span></label>
+            </div>
+            <div class="field">
+              <label>Transcript (optional)</label>
+              <input id="subsInput" type="file" accept=".srt,.vtt,text/vtt" class="input file" />
+              <p class="hint">Upload an .srt/.vtt to skip speech recognition.</p>
+            </div>
+          </div>
+        </details>
+
+        <button id="submitBtn" class="btn primary big" type="submit">⚡ Generate viral clips</button>
+        <p id="formError" class="error hidden"></p>
+      </form>
+
+      <section id="recentWrap" class="hidden">
+        <h2 class="section-title">Recent projects</h2>
+        <div id="recent" class="recent"></div>
+      </section>
+    </section>
+
+    <!-- PROGRESS + RESULTS -->
+    <section id="jobView" class="view hidden">
+      <div class="job-head">
+        <button class="btn ghost" id="backBtn">← New project</button>
+        <div>
+          <h2 id="jobTitle">Processing…</h2>
+          <p class="muted" id="jobMeta"></p>
+        </div>
+        <div class="job-actions">
+          <a class="btn" id="zipBtn" href="#">⬇ Download all</a>
+        </div>
+      </div>
+
+      <div id="progressCard" class="card progress-card">
+        <ol class="steps" id="steps">
+          <li data-step="ingest"><span>📥</span>Import</li>
+          <li data-step="transcribe"><span>🎙️</span>Transcribe</li>
+          <li data-step="analyze"><span>🔥</span>Find viral moments</li>
+          <li data-step="copywrite"><span>✍️</span>Write posts</li>
+          <li data-step="render"><span>🎞️</span>Render shorts</li>
+        </ol>
+        <div class="bar"><div id="bar"></div></div>
+        <p id="progressMsg" class="muted">Starting…</p>
+        <p id="jobError" class="error hidden"></p>
+      </div>
+
+      <div id="summaryCard" class="card summary hidden">
+        <div>
+          <h3>📣 Post for the full video</h3>
+          <p id="longPost" class="post-text"></p>
+        </div>
+        <button class="btn small" id="copyLong">Copy</button>
+      </div>
+
+      <div id="clips" class="clips"></div>
+
+      <div id="scheduleCard" class="card hidden">
+        <div class="row-between">
+          <h3>🗓️ Posting schedule</h3>
+          <a class="btn small" id="icsBtn" href="#">Add to calendar (.ics)</a>
+        </div>
+        <ul id="scheduleList" class="schedule"></ul>
+      </div>
+    </section>
+  </main>
+
+  <!-- schedule modal -->
+  <dialog id="schedDialog" class="modal">
+    <form method="dialog" id="schedForm">
+      <h3>Schedule this short</h3>
+      <p class="muted" id="schedClipTitle"></p>
+      <label>Platform</label>
+      <div class="seg" id="schedPlatforms"></div>
+      <label>Date &amp; time <small class="muted" id="bestTime"></small></label>
+      <input type="datetime-local" id="schedTime" class="input" required />
+      <label>Caption</label>
+      <textarea id="schedCaption" class="input" rows="6"></textarea>
+      <div class="row-end">
+        <button class="btn ghost" value="cancel" formnovalidate>Cancel</button>
+        <button class="btn primary" id="schedSave" value="save">Add to schedule</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -44,3 +44,5 @@ htmlcov/
 
 # Logs
 *.log
+# ClipForge runtime data
+clipforge_data/
