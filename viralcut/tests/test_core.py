@@ -147,3 +147,21 @@ def test_claude_plans_are_snapped_and_normalised():
     plans = _plans_from_ai(result, sentences, np.zeros(200), JobSettings.from_dict({"min_len": 5, "max_len": 15}))
     assert len(plans) == 1  # duplicate overlapping clip dropped
     assert plans[0]["start"] == 1.0 and plans[0]["hashtags"]["tiktok"] == ["#fyp", "#ai"]
+
+
+def test_password_protection(monkeypatch, tmp_path):
+    import base64  # pylint: disable=import-outside-toplevel
+
+    monkeypatch.setenv("VIRALCUT_DATA", str(tmp_path))
+    from fastapi.testclient import TestClient  # pylint: disable=import-outside-toplevel
+
+    from viralcut import app as app_module  # pylint: disable=import-outside-toplevel
+
+    monkeypatch.setattr(app_module, "PASSWORD", "s3cret")
+    client = TestClient(app_module.app)
+    assert client.get("/api/config").status_code == 401
+    assert client.get("/healthz").status_code == 200
+    good = base64.b64encode(b"me:s3cret").decode()
+    bad = base64.b64encode(b"me:nope").decode()
+    assert client.get("/api/config", headers={"Authorization": f"Basic {good}"}).status_code == 200
+    assert client.get("/api/config", headers={"Authorization": f"Basic {bad}"}).status_code == 401

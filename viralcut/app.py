@@ -5,6 +5,8 @@ Run:  uvicorn viralcut.app:app --host 0.0.0.0 --port 8000
 
 from __future__ import annotations
 
+import base64
+import hmac
 import io
 import json
 import logging
@@ -15,7 +17,7 @@ import zipfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -34,6 +36,28 @@ PLATFORMS = ("tiktok", "instagram", "youtube", "x", "linkedin")
 app = FastAPI(title="ViralCut", version=__version__)
 store = JobStore(DATA_DIR / "jobs", workers=int(os.environ.get("VIRALCUT_WORKERS", "1")))
 app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
+PASSWORD = os.environ.get("VIRALCUT_PASSWORD", "")
+
+
+@app.middleware("http")
+async def require_password(request: Request, call_next):
+    """Optional site-wide password (HTTP Basic auth, any username) for public deployments."""
+    if not PASSWORD or request.url.path == "/healthz":
+        return await call_next(request)
+    header = request.headers.get("authorization", "")
+    if header.lower().startswith("basic "):
+        try:
+            _user, _, given = base64.b64decode(header[6:]).decode().partition(":")
+        except ValueError:
+            given = ""
+        if hmac.compare_digest(given.encode(), PASSWORD.encode()):
+            return await call_next(request)
+    return Response("Password required", status_code=401, headers={"WWW-Authenticate": 'Basic realm="ViralCut"'})
+
+
+@app.get("/healthz")
+def healthz() -> dict:
+    return {"ok": True}
 
 
 def _job_or_404(job_id: str):

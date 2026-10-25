@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import logging
 import threading
 import time
@@ -30,7 +31,7 @@ class JobSettings:
     caption_style: str = "bold"
     show_hook: bool = True
     resolution: int = 720           # output width; height = width * 16 / 9
-    whisper_model: str = "small"
+    whisper_model: str = field(default_factory=lambda: os.environ.get("VIRALCUT_WHISPER_MODEL", "small"))
     language: str | None = None
     use_ai: bool = True
 

@@ -39,6 +39,28 @@ docker build -t viralcut -f viralcut/Dockerfile .
 docker run -p 8000:8000 -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY -v $PWD/viralcut_data:/app/viralcut_data viralcut
 ```
 
+## Deploy online
+
+ViralCut needs a real server, not static hosting: it runs FFmpeg, Whisper and OpenCV. Plan for at least
+**2 GB RAM** (4 GB+ for long videos) and a persistent disk for projects.
+
+### Render (easiest, ~$25/month for the 2 GB plan + disk)
+
+1. Push this repo to GitHub (already done if you're reading this there).
+2. In [Render](https://dashboard.render.com): **New → Blueprint**, pick this repository and branch.
+   Render reads [`render.yaml`](../render.yaml), builds `viralcut/Dockerfile` and attaches a 20 GB disk.
+3. When asked, fill in **`ANTHROPIC_API_KEY`** and a **`VIRALCUT_PASSWORD`**.
+4. Open the `https://viralcut-xxxx.onrender.com` URL. Your browser asks for a password: enter any username and your `VIRALCUT_PASSWORD`.
+
+### Railway / Fly.io / Google Cloud Run / any VPS
+
+All of them can build `viralcut/Dockerfile` directly (build context = repo root). The container listens on `$PORT`.
+Set the same environment variables and mount a volume at the path in `VIRALCUT_DATA`.
+On a VPS: `docker build -t viralcut -f viralcut/Dockerfile . && docker run -d -p 80:8000 --env-file .env -v /srv/viralcut:/app/viralcut_data viralcut`.
+
+> **Always set `VIRALCUT_PASSWORD` on a public server.** Without it anyone who finds the URL can process videos
+> on your server and spend your Claude API credits.
+
 ## Configuration (environment variables)
 
 | Variable | Default | Purpose |
@@ -48,6 +70,9 @@ docker run -p 8000:8000 -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY -v $PWD/viralcut
 | `VIRALCUT_DATA` | `./viralcut_data` | Where projects, clips and transcripts are stored |
 | `VIRALCUT_WORKERS` | `1` | Videos processed in parallel |
 | `VIRALCUT_FONT` | `Arial Black` | Caption font (any installed font; e.g. `Montserrat Black`) |
+| `VIRALCUT_PASSWORD` | – | Password for the whole site (HTTP Basic auth, any username) |
+| `VIRALCUT_WHISPER_MODEL` | `small` | Whisper size: `tiny`, `base`, `small`, `medium`, `large-v3` (bigger = more accurate, more RAM) |
+| `PORT` | `8000` | Port the Docker container listens on |
 
 ## API
 
